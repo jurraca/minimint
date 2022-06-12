@@ -2,6 +2,7 @@ use bytes::{Buf, BufMut, BytesMut};
 use futures::{Sink, Stream};
 use std::convert::TryInto;
 use std::fmt::Debug;
+use std::fmt::{Display, Formatter};
 use std::io::{Read, Write};
 use std::marker::PhantomData;
 use std::pin::Pin;
@@ -10,6 +11,20 @@ use tokio::io::{AsyncRead, AsyncWrite, ReadHalf, WriteHalf};
 use tokio::net::tcp::{OwnedReadHalf, OwnedWriteHalf};
 use tokio_util::codec::{FramedRead, FramedWrite};
 use tracing::{error, trace};
+
+#[derive(Debug)]
+pub struct TransportError(Box<dyn std::error::Error + Send>);
+
+pub trait FramedTransport<T>:
+    Sink<T, Error = TransportError> + Stream<Item = Result<T, TransportError>>
+{
+    fn split(
+        &mut self,
+    ) -> (
+        &'_ mut dyn Sink<T, Error = TransportError>,
+        &'_ mut dyn Stream<Item = Result<T, TransportError>>,
+    );
+}
 
 /// Special case for tokio [`TcpStream`](tokio::net::TcpStream) based [`BidiFramed`] instances
 pub type TcpBidiFramed<T> = BidiFramed<T, OwnedWriteHalf, OwnedReadHalf>;
@@ -88,7 +103,7 @@ where
     RH: Unpin,
     T: Debug + serde::Serialize,
 {
-    type Error = <FramedSink<WH, T> as Sink<T>>::Error;
+    type Error = TransportError;
 
     fn poll_ready(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), Self::Error>> {
         Sink::poll_ready(Pin::new(&mut self.sink), cx)
@@ -113,10 +128,27 @@ where
     WH: Unpin,
     RH: tokio::io::AsyncRead + Unpin,
 {
-    type Item = <FramedStream<RH, T> as Stream>::Item;
+    type Item = Result<T, TransportError>;
 
     fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
         Stream::poll_next(Pin::new(&mut self.stream), cx)
+    }
+}
+
+impl<T, WH, RH> FramedTransport<T> for BidiFramed<T, WH, RH>
+where
+    T: Debug + serde::Serialize + serde::de::DeserializeOwned,
+    WH: tokio::io::AsyncWrite + Unpin,
+    RH: tokio::io::AsyncRead + Unpin,
+{
+    fn split(
+        &mut self,
+    ) -> (
+        &'_ mut dyn Sink<T, Error = TransportError>,
+        &'_ mut dyn Stream<Item = Result<T, TransportError>>,
+    ) {
+        let (sink, stream) = self.borrow_parts();
+        (&mut *sink, &mut *stream)
     }
 }
 
@@ -132,7 +164,7 @@ impl<T> tokio_util::codec::Encoder<T> for BincodeCodec<T>
 where
     T: serde::Serialize + Debug,
 {
-    type Error = bincode::Error;
+    type Error = TransportError;
 
     fn encode(&mut self, item: T, dst: &mut bytes::BytesMut) -> Result<(), Self::Error> {
         // First, write a dummy length field and remember its position
@@ -141,10 +173,12 @@ where
         assert_eq!(dst.len(), old_len + 8);
 
         // Then we serialize the message into the buffer
-        bincode::serialize_into(dst.writer(), &item).map_err(|e| {
-            error!("Serializing message failed: {:?}", item);
-            e
-        })?;
+        bincode::serialize_into(dst.writer(), &item)
+            .map_err(|e| {
+                error!("Serializing message failed: {:?}", item);
+                e
+            })
+            .map_err(TransportError::from_err)?;
 
         // Lastly we update the length field by counting how many bytes have been written
         let new_len = dst.len();
@@ -160,7 +194,7 @@ where
     T: serde::de::DeserializeOwned,
 {
     type Item = T;
-    type Error = bincode::Error;
+    type Error = TransportError;
 
     fn decode(&mut self, src: &mut BytesMut) -> Result<Option<Self::Item>, Self::Error> {
         if src.len() < 8 {
@@ -179,9 +213,34 @@ where
             .read_exact(&mut [0u8; 8][..])
             .expect("minimum length checked");
 
-        bincode::deserialize_from(src.reader()).map(Option::Some)
+        bincode::deserialize_from(src.reader())
+            .map(Option::Some)
+            .map_err(TransportError::from_err)
     }
 }
+
+impl From<std::io::Error> for TransportError {
+    fn from(e: std::io::Error) -> Self {
+        Self::from_err(e)
+    }
+}
+
+impl TransportError {
+    fn from_err<E>(e: E) -> Self
+    where
+        E: std::error::Error + Send + 'static,
+    {
+        TransportError(Box::new(e))
+    }
+}
+
+impl Display for TransportError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(&self.0, f)
+    }
+}
+
+impl std::error::Error for TransportError {}
 
 #[cfg(test)]
 mod tests {
