@@ -6,6 +6,7 @@ use serde::Serialize;
 pub mod api;
 pub mod connect;
 pub mod framed;
+pub mod reliable;
 
 #[async_trait]
 pub trait PeerConnections<T>
