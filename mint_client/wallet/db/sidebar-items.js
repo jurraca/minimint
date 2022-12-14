@@ -1,1 +1,1 @@
-initSidebarItems({"constant":[["DB_PREFIX_PEG_IN",""]],"struct":[["PegInKey",""],["PegInPrefixKey",""]]});
+window.SIDEBAR_ITEMS = {"enum":[["DbKeyPrefix",""]],"struct":[["DbKeyPrefixIter","An iterator over the variants of [Self]"],["PegInKey",""],["PegInPrefixKey",""]]};

@@ -1,1 +1,0 @@
-initSidebarItems({"mod":[["test",""]],"trait":[["BitcoindRpc","Trait that allows interacting with the Bitcoin blockchain"]]});

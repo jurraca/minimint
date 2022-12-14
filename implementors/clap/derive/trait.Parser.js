@@ -1,6 +1,6 @@
-(function() {var implementors = {};
-implementors["configgen"] = [{"text":"impl Parser for <a class=\"struct\" href=\"configgen/struct.Options.html\" title=\"struct configgen::Options\">Options</a>","synthetic":false,"types":["configgen::Options"]}];
-implementors["gw_configgen"] = [{"text":"impl Parser for <a class=\"struct\" href=\"gw_configgen/struct.Opts.html\" title=\"struct gw_configgen::Opts\">Opts</a>","synthetic":false,"types":["gw_configgen::Opts"]}];
-implementors["ln_gateway"] = [{"text":"impl Parser for <a class=\"struct\" href=\"ln_gateway/struct.Opts.html\" title=\"struct ln_gateway::Opts\">Opts</a>","synthetic":false,"types":["ln_gateway::Opts"]}];
-implementors["minimint"] = [{"text":"impl Parser for <a class=\"struct\" href=\"minimint/config/struct.ServerOpts.html\" title=\"struct minimint::config::ServerOpts\">ServerOpts</a>","synthetic":false,"types":["minimint::config::ServerOpts"]}];
-if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
+(function() {var implementors = {
+"configgen":[["impl Parser for <a class=\"struct\" href=\"configgen/struct.Cli.html\" title=\"struct configgen::Cli\">Cli</a>"]],
+"distributedgen":[["impl Parser for <a class=\"struct\" href=\"distributedgen/struct.Cli.html\" title=\"struct distributedgen::Cli\">Cli</a>"]],
+"fedimint_cli":[["impl Parser for <a class=\"struct\" href=\"fedimint_cli/struct.Cli.html\" title=\"struct fedimint_cli::Cli\">Cli</a>"],["impl Parser for <a class=\"struct\" href=\"fedimint_cli/struct.CliNoWorkdir.html\" title=\"struct fedimint_cli::CliNoWorkdir\">CliNoWorkdir</a>"]],
+"gateway_cli":[["impl Parser for <a class=\"struct\" href=\"gateway_cli/struct.Cli.html\" title=\"struct gateway_cli::Cli\">Cli</a>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

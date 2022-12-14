@@ -1,1 +1,0 @@
-initSidebarItems({"mod":[["interconnect",""],["testing",""]],"struct":[["ApiEndpoint","Definition of an API endpoint defined by a module `M`."],["InputMeta",""]],"trait":[["FederationModule",""]],"type":[["Params","Map of URL parameters and their values."]]});

@@ -1,1 +1,1 @@
-window.ALL_CRATES = ["configgen","gw_configgen","ln_gateway","minimint","minimint_api","minimint_derive","minimint_ln","minimint_mint","minimint_wallet","mint_client","server","tbs"];
+window.ALL_CRATES = ["configgen","distributedgen","fedimint_api","fedimint_bitcoind","fedimint_build","fedimint_cli","fedimint_client","fedimint_core","fedimint_dbdump","fedimint_derive","fedimint_ln","fedimint_mint","fedimint_rocksdb","fedimint_server","fedimint_sled","fedimint_testing","fedimint_wallet","fedimintd","gateway_cli","hkdf","ln_gateway","mint_client","tbs"];

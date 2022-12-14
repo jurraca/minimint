@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["IncomingContractAccount",""]]});
+window.SIDEBAR_ITEMS = {"struct":[["ConfirmedInvoice","Invoice whose “offer” has been accepted by federation"],["IncomingContractAccount",""]]};
